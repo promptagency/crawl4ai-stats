@@ -279,19 +279,19 @@ export function Dashboard() {
                 <thead>
                   <tr className="border-b border-border">
                     {["endpoint", "count", "avg latency", "success", "pool hit", "errors"].map(h => (
-                      <th key={h} className="px-3 py-2 text-[0.65rem] font-normal uppercase tracking-[0.14em] text-fg-dim">{h}</th>
+                      <th key={h} className="px-4 py-3 text-[0.65rem] font-normal uppercase tracking-[0.14em] text-fg-dim">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {endpointRows.map(([ep, s]) => (
                     <tr key={ep} className="border-b border-border/60 last:border-0">
-                      <td className="px-3 py-2 font-medium text-fg-bright">{ep}</td>
-                      <td className="px-3 py-2 tabular-nums">{s.count}</td>
-                      <td className="px-3 py-2 tabular-nums">{s.avg_latency_ms.toFixed(0)} ms</td>
-                      <td className={cn("px-3 py-2 tabular-nums", rateTone(s.success_rate_percent))}>{s.success_rate_percent.toFixed(1)}%</td>
-                      <td className="px-3 py-2 tabular-nums text-cold">{s.pool_hit_rate_percent.toFixed(1)}%</td>
-                      <td className={cn("px-3 py-2 tabular-nums", s.errors > 0 ? "text-err" : "text-fg-dim")}>{s.errors}</td>
+                      <td className="px-4 py-3 font-medium text-fg-bright">{ep}</td>
+                      <td className="px-4 py-3 tabular-nums">{s.count}</td>
+                      <td className="px-4 py-3 tabular-nums">{s.avg_latency_ms.toFixed(0)} ms</td>
+                      <td className={cn("px-4 py-3 tabular-nums", rateTone(s.success_rate_percent))}>{s.success_rate_percent.toFixed(1)}%</td>
+                      <td className="px-4 py-3 tabular-nums text-cold">{s.pool_hit_rate_percent.toFixed(1)}%</td>
+                      <td className={cn("px-4 py-3 tabular-nums", s.errors > 0 ? "text-err" : "text-fg-dim")}>{s.errors}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -330,20 +330,20 @@ export function Dashboard() {
                 <thead>
                   <tr className="border-b border-border">
                     {["status", "endpoint", "url", "elapsed", "mem Δ", "pool", "time"].map(h => (
-                      <th key={h} className="px-3 py-2 text-[0.65rem] font-normal uppercase tracking-[0.14em] text-fg-dim">{h}</th>
+                      <th key={h} className="px-4 py-3 text-[0.65rem] font-normal uppercase tracking-[0.14em] text-fg-dim">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {completed.map((r) => (
                     <tr key={r.id} className="border-b border-border/60 last:border-0">
-                      <td className={cn("px-3 py-2 tabular-nums", r.success ? "text-ok" : "text-err")}>{r.success ? "✓" : "✗"} {r.status_code}</td>
-                      <td className="px-3 py-2">{r.endpoint}</td>
-                      <td className="max-w-[22rem] truncate px-3 py-2 text-fg-dim" title={r.url}>{truncateUrl(r.url)}</td>
-                      <td className="px-3 py-2 tabular-nums">{r.elapsed.toFixed(2)}s</td>
-                      <td className={cn("px-3 py-2 tabular-nums", r.mem_delta > 0 ? "text-warn" : "text-fg-dim")}>{r.mem_delta > 0 ? "+" : ""}{r.mem_delta.toFixed(1)} MB</td>
-                      <td className="px-3 py-2">{r.pool_hit ? "♻️" : "🆕"}</td>
-                      <td className="px-3 py-2 tabular-nums text-fg-dim">{new Date(r.end_time * 1000).toLocaleTimeString([], { hour12: false })}</td>
+                      <td className={cn("px-4 py-3 tabular-nums", r.success ? "text-ok" : "text-err")}>{r.success ? "✓" : "✗"} {r.status_code}</td>
+                      <td className="px-4 py-3">{r.endpoint}</td>
+                      <td className="max-w-[22rem] truncate px-4 py-3 text-fg-dim" title={r.url}>{truncateUrl(r.url)}</td>
+                      <td className="px-4 py-3 tabular-nums">{r.elapsed.toFixed(2)}s</td>
+                      <td className={cn("px-4 py-3 tabular-nums", r.mem_delta > 0 ? "text-warn" : "text-fg-dim")}>{r.mem_delta > 0 ? "+" : ""}{r.mem_delta.toFixed(1)} MB</td>
+                      <td className="px-4 py-3">{r.pool_hit ? "♻️" : "🆕"}</td>
+                      <td className="px-4 py-3 tabular-nums text-fg-dim">{new Date(r.end_time * 1000).toLocaleTimeString([], { hour12: false })}</td>
                     </tr>
                   ))}
                 </tbody>

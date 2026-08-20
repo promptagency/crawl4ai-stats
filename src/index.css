@@ -16,10 +16,12 @@
   --color-cold: oklch(0.72 0.13 250);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 body {
@@ -30,8 +32,9 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   background-image:
-    radial-gradient(900px 400px at 8% -10%, color-mix(in oklab, var(--color-ok) 9%, transparent), transparent),
-    radial-gradient(800px 400px at 95% 0%, color-mix(in oklab, var(--color-perm) 9%, transparent), transparent);
+    radial-gradient(900px 500px at 8% -10%, color-mix(in oklab, var(--color-ok) 12%, transparent), transparent),
+    radial-gradient(800px 500px at 95% 0%, color-mix(in oklab, var(--color-perm) 12%, transparent), transparent),
+    radial-gradient(1000px 600px at 50% 110%, color-mix(in oklab, var(--color-perm) 6%, transparent), transparent);
   background-attachment: fixed;
 }
 
@@ -54,8 +57,11 @@ body {
 }
 
 .panel {
-  background-color: color-mix(in oklab, var(--color-bg-card) 75%, transparent);
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  backdrop-filter: blur(6px);
+  background-color: color-mix(in oklab, var(--color-bg-card) 65%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-border) 80%, transparent);
+  border-radius: 0.625rem;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  box-shadow: 0 1px 0 0 color-mix(in oklab, white 4%, transparent) inset,
+    0 8px 24px -12px color-mix(in oklab, black 60%, transparent);
 }
