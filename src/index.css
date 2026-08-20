@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0c0e14;
+  --color-bg-card: #12141e;
+  --color-bg-hover: #1a1d2b;
+  --color-border: #1e2130;
+  --color-fg: #c8ccd4;
+  --color-fg-dim: #6b7280;
+  --color-fg-bright: #e2e5eb;
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
+  --color-err: #f87171;
+  --color-perm: #818cf8;
+  --color-hot: #f97316;
+  --color-cold: #60a5fa;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "JetBrains Mono", "SF Mono", "Fira Code", ui-monospace, monospace;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes pulse-ring {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(2.5); }
+}
+
+.pulse-dot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+.pulse-dot { position: relative; }
