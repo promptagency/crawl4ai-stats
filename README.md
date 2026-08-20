@@ -2,7 +2,9 @@
 
 Real-time monitoring dashboard for self-hosted [Crawl4AI](https://github.com/unclecode/crawl4ai) servers (v0.9.x).
 
-![Dashboard screenshot placeholder](https://img.shields.io/badge/status-stable-green) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Status](https://img.shields.io/badge/status-stable-green) ![License](https://img.shields.io/badge/license-MIT-blue)
+
+![Crawl4AI Stats Dashboard](screenshot.jpg)
 
 ## What it does
 
