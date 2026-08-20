@@ -2,9 +2,7 @@
 
 Real-time monitoring dashboard for self-hosted [Crawl4AI](https://github.com/unclecode/crawl4ai) servers (v0.9.x).
 
-![License](https://img.shields.io/badge/license-MIT-blue)
-
-![Crawl4AI Stats Dashboard](screenshot.jpg)
+![Dashboard screenshot placeholder](https://img.shields.io/badge/status-stable-green) ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## What it does
 
@@ -23,8 +21,9 @@ All connection details (server URL and API token) are stored in your browser's l
 ## Requirements
 
 - A self-hosted Crawl4AI server running **v0.9.x** with the monitor API enabled (enabled by default)
-- CORS configured on the server to allow requests from wherever you host this dashboard
-- Node.js 18+ for local development
+- Node.js 18+ (used for the built-in proxy server)
+
+No CORS configuration is needed on your Crawl4AI server. The dashboard includes a lightweight Node.js proxy that makes all API requests server-side, avoiding browser CORS restrictions entirely.
 
 ## Quick start
 
@@ -39,15 +38,16 @@ Open `http://localhost:5173`, click the settings icon, enter your Crawl4AI serve
 
 ## Deploying
 
-Build the static files:
+Build and start the production server:
 
 ```bash
 npm run build
+npm start
 ```
 
-The `dist/` folder contains a standard static SPA. Deploy it anywhere that serves static files: Cloudflare Pages, Netlify, Vercel, Nginx, Apache, or just `npx serve dist`.
+The server runs on port 3001 by default (override with `PORT` env var). It serves the static dashboard and proxies API requests to your Crawl4AI server. Put it behind Nginx, Caddy, or any reverse proxy for HTTPS.
 
-### Docker (optional)
+### Docker
 
 ```dockerfile
 FROM node:22-alpine AS build
@@ -57,62 +57,11 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
+FROM node:22-alpine
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/server.js .
+COPY --from=build /app/package.json .
+EXPOSE 3001
+CMD ["node", "server.js", "--production"]
 ```
-
-## CORS configuration
-
-Your Crawl4AI server must allow requests from the domain where you host this dashboard. In your `config.yml`:
-
-```yaml
-security:
-  cors_allow_origins: ["https://your-dashboard-domain.example"]
-```
-
-For local development, add `http://localhost:5173` to the list, or temporarily use `["*"]`.
-
-## API endpoints used
-
-All endpoints require `Authorization: Bearer <CRAWL4AI_API_TOKEN>`.
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/monitor/health` | System health, pool summary, memory pressure |
-| GET | `/monitor/browsers` | Browser pool details |
-| GET | `/monitor/requests?status=all&limit=20` | Active and completed requests |
-| GET | `/monitor/endpoints/stats` | Per-endpoint performance statistics |
-| GET | `/monitor/logs/errors?limit=10` | Recent error log |
-| POST | `/monitor/actions/cleanup` | Force cleanup cold pool browsers |
-| POST | `/monitor/actions/kill_browser` | Kill a specific browser `{ "sig": "..." }` |
-| POST | `/monitor/actions/restart_browser` | Restart a browser `{ "sig": "..." }` |
-| POST | `/monitor/stats/reset` | Reset endpoint statistics |
-
-**Note:** The monitor API only tracks requests made via the `/crawl` endpoint. Requests to `/md`, `/html`, `/screenshot`, and `/pdf` are not recorded in the request list or endpoint statistics. This is a limitation in Crawl4AI's monitor system, not in this dashboard.
-
-## Security considerations
-
-- The API token is stored in localStorage and sent directly from the browser to your Crawl4AI server. Only host this dashboard on domains you trust.
-- The dashboard validates that the base URL uses `http://` or `https://` before making requests.
-- All destructive actions (kill, restart, cleanup, reset) require confirmation via a dialog.
-- No data is sent to any third-party service. The dashboard is a pure client-side SPA with zero external dependencies beyond npm packages.
-- If you expose your Crawl4AI server to the internet, always use HTTPS and a strong API token.
-
-## Tech stack
-
-- React 19 + TypeScript
-- Tailwind CSS 4
-- Vite 8
-- Lucide icons
-- Sonner (toast notifications)
-
-No UI framework, no routing library, no state management library. Minimal dependencies by design.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
-
-## Credits
-
-Built by [Prompt Agency](https://promptagency.se) as a companion tool for self-hosted Crawl4AI deployments.

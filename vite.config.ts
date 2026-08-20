@@ -7,4 +7,12 @@ export default defineConfig({
   resolve: {
     alias: { "@": "/src" },
   },
+  server: {
+    proxy: {
+      "/api/proxy": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+      },
+    },
+  },
 });

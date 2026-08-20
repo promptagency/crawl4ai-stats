@@ -6,8 +6,9 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node server.js & vite",
     "build": "tsc -b && vite build",
+    "start": "node server.js --production",
     "preview": "vite preview"
   },
   "dependencies": {

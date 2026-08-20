@@ -128,16 +128,8 @@ export type ErrorEntry = {
 };
 
 // ---------------------------------------------------------------------------
-// Fetch helpers
+// Fetch helpers — all requests go through /api/proxy to avoid CORS issues
 // ---------------------------------------------------------------------------
-
-function validateUrl(base: string): URL {
-  const url = new URL(base);
-  if (url.protocol !== "https:" && url.protocol !== "http:") {
-    throw new Error("Only http/https URLs are allowed");
-  }
-  return url;
-}
 
 async function call<T>(
   settings: Settings,
@@ -146,37 +138,34 @@ async function call<T>(
   body?: unknown,
   signal?: AbortSignal,
 ): Promise<T> {
-  const base = validateUrl(settings.baseUrl.replace(/\/+$/, ""));
-  const url = `${base.origin}${path}`;
-
-  const headers: Record<string, string> = { Accept: "application/json" };
-  if (settings.token) headers["Authorization"] = `Bearer ${settings.token}`;
-  if (method === "POST") headers["Content-Type"] = "application/json";
-
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: method === "POST" ? JSON.stringify(body ?? {}) : null,
+  const res = await fetch("/api/proxy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      baseUrl: settings.baseUrl,
+      path,
+      method,
+      token: settings.token || undefined,
+      body: method === "POST" ? JSON.stringify(body ?? {}) : undefined,
+    }),
     signal,
   });
 
-  const text = await res.text();
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    parsed = null;
-  }
+  if (!res.ok) throw new Error(`Proxy error: HTTP ${res.status}`);
 
-  if (!res.ok) {
-    const detail =
-      parsed && typeof parsed === "object" && parsed !== null && "detail" in parsed
-        ? String((parsed as Record<string, unknown>).detail)
-        : `HTTP ${res.status}`;
+  const result = await res.json() as { ok: boolean; status: number; body: string };
+
+  if (!result.ok) {
+    let detail = `HTTP ${result.status}`;
+    try {
+      const parsed = JSON.parse(result.body);
+      if (parsed?.detail) detail = String(parsed.detail);
+      else if (parsed?.error) detail = String(parsed.error);
+    } catch { /* use default */ }
     throw new Error(detail);
   }
 
-  return parsed as T;
+  return JSON.parse(result.body) as T;
 }
 
 export async function apiGet<T>(settings: Settings, path: string, signal?: AbortSignal): Promise<T> {
