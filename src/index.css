@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0c0e14;
-  --color-bg-card: #12141e;
-  --color-bg-hover: #1a1d2b;
-  --color-border: #1e2130;
-  --color-fg: #c8ccd4;
-  --color-fg-dim: #6b7280;
-  --color-fg-bright: #e2e5eb;
-  --color-ok: #34d399;
-  --color-warn: #fbbf24;
-  --color-err: #f87171;
-  --color-perm: #818cf8;
-  --color-hot: #f97316;
-  --color-cold: #60a5fa;
+  --color-bg: oklch(0.17 0.017 265);
+  --color-bg-card: oklch(0.212 0.018 265);
+  --color-bg-hover: oklch(0.253 0.02 265);
+  --color-border: oklch(0.29 0.02 265);
+  --color-fg: oklch(0.842 0.011 265);
+  --color-fg-dim: oklch(0.63 0.017 265);
+  --color-fg-bright: oklch(0.92 0.006 265);
+  --color-ok: oklch(0.78 0.16 162);
+  --color-warn: oklch(0.84 0.16 84);
+  --color-err: oklch(0.71 0.16 22);
+  --color-perm: oklch(0.7 0.15 279);
+  --color-hot: oklch(0.7 0.19 45);
+  --color-cold: oklch(0.72 0.13 250);
 }
 
 * {
@@ -24,25 +24,38 @@
 
 body {
   font-family: "JetBrains Mono", "SF Mono", "Fira Code", ui-monospace, monospace;
-  background: var(--color-bg);
+  background-color: var(--color-bg);
   color: var(--color-fg);
   font-size: 13px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(900px 400px at 8% -10%, color-mix(in oklab, var(--color-ok) 9%, transparent), transparent),
+    radial-gradient(800px 400px at 95% 0%, color-mix(in oklab, var(--color-perm) 9%, transparent), transparent);
+  background-attachment: fixed;
 }
 
 @keyframes pulse-ring {
   0% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(2.5); }
+  75%, 100% { opacity: 0; transform: scale(2.4); }
 }
 
-.pulse-dot::before {
+.pulse-dot {
+  position: relative;
+}
+.pulse-dot::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 9999px;
   background: currentColor;
-  animation: pulse-ring 1.5s ease-out infinite;
+  opacity: 0.5;
+  animation: pulse-ring 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-.pulse-dot { position: relative; }
+.panel {
+  background-color: color-mix(in oklab, var(--color-bg-card) 75%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  backdrop-filter: blur(6px);
+}
