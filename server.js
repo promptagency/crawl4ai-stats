@@ -11,15 +11,30 @@
 
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
-import { extname, join } from "node:path";
+import { extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const PORT = parseInt(process.env.PORT || "3001", 10);
 const DIST = join(fileURLToPath(import.meta.url), "..", "dist");
 const IS_PROD = process.argv.includes("--production");
+const MAX_PROXY_BODY_BYTES = 1 * 1024 * 1024;
 
 const PRIVATE_HOST =
   /^(localhost|127\.|0\.|10\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|metadata\.)/i;
+
+function isBlockedHost(hostname) {
+  const h = hostname.toLowerCase();
+  if (PRIVATE_HOST.test(h)) return true;
+  if (h.startsWith("[") && h.endsWith("]")) {
+    const ip6 = h.slice(1, -1);
+    if (ip6 === "::1" || ip6 === "0:0:0:0:0:0:0:1") return true; // loopback
+    if (/^fe[89ab][0-9a-f]:/.test(ip6)) return true; // link-local fe80::/10
+    if (/^f[cd][0-9a-f]{2}:/.test(ip6)) return true; // unique local fc00::/7
+    const mapped = ip6.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+    if (mapped && PRIVATE_HOST.test(mapped[1])) return true; // IPv4-mapped IPv6
+  }
+  return false;
+}
 
 const MIME = {
   ".html": "text/html",
@@ -36,7 +51,17 @@ const MIME = {
 
 async function handleProxy(req, res) {
   let body = "";
-  for await (const chunk of req) body += chunk;
+  let bytes = 0;
+  for await (const chunk of req) {
+    bytes += chunk.length;
+    if (bytes > MAX_PROXY_BODY_BYTES) {
+      res.writeHead(413, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Payload too large" }));
+      req.destroy();
+      return;
+    }
+    body += chunk;
+  }
 
   let payload;
   try {
@@ -64,7 +89,7 @@ async function handleProxy(req, res) {
     return;
   }
 
-  if (PRIVATE_HOST.test(target.hostname)) {
+  if (isBlockedHost(target.hostname)) {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Blocked target host" }));
     return;
@@ -95,7 +120,19 @@ async function handleProxy(req, res) {
 }
 
 async function serveStatic(req, res) {
-  let filePath = join(DIST, req.url === "/" ? "index.html" : req.url);
+  let urlPath;
+  try {
+    urlPath = decodeURIComponent((req.url || "/").split("?")[0]);
+  } catch {
+    urlPath = "/";
+  }
+  const rel = urlPath === "/" ? "index.html" : urlPath.replace(/^\/+/, "");
+  let filePath = resolve(DIST, rel);
+  if (filePath !== DIST && !filePath.startsWith(DIST + sep)) {
+    res.writeHead(403);
+    res.end("Forbidden");
+    return;
+  }
   try {
     await stat(filePath);
   } catch {
