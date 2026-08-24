@@ -39,7 +39,7 @@ openssl rand -hex 32
 
 Then set `CRAWL4AI_API_TOKEN` to that value on whichever platform runs Crawl4AI:
 
-**Coolify** — New Resource → Docker Image → image `unclecode/crawl4ai:latest`, port `11235` → open the **Environment Variables** tab and add `CRAWL4AI_API_TOKEN` with the generated value → Deploy.
+**Coolify** — New Resource → Docker Image → image `unclecode/crawl4ai:latest`, port `11235` → open the **Environment Variables** tab and add `CRAWL4AI_API_TOKEN` with the generated value, marking it as a secret if that option is available → Deploy. Keep Coolify itself up to date — older versions had bugs ([#7019](https://github.com/coollabsio/coolify/issues/7019), [#7235](https://github.com/coollabsio/coolify/issues/7235)) where secret env vars leaked into deployment logs.
 
 **Docker Compose**
 
@@ -56,21 +56,28 @@ services:
 
 ```bash
 echo "CRAWL4AI_API_TOKEN=$(openssl rand -hex 32)" >> .env
+echo ".env" >> .gitignore
 docker compose up -d
 ```
 
 **Plain `docker run`**
 
 ```bash
+CRAWL4AI_TOKEN="$(openssl rand -hex 32)"
 docker run -d \
   --name crawl4ai \
   -p 11235:11235 \
-  -e CRAWL4AI_API_TOKEN=$(openssl rand -hex 32) \
+  -e CRAWL4AI_API_TOKEN="$CRAWL4AI_TOKEN" \
   --shm-size=1g \
   unclecode/crawl4ai:latest
+echo "Save this token: $CRAWL4AI_TOKEN"
 ```
 
+Generating the token into a variable first, rather than inlining `$(openssl rand -hex 32)` directly in the `-e` flag, keeps the literal secret out of your shell history.
+
 Once the server is running with a token, paste its URL and that token into Crawl4AI Stats' settings panel. See the [Crawl4AI self-hosting guide](https://docs.crawl4ai.com/core/self-hosting/) for the full reference.
+
+> **Note:** all three approaches store the token as a plain container environment variable. Anyone with Docker access on that host can still read it via `docker inspect` (or `/proc/<pid>/environ`) — that's an inherent property of env-var-based config, not something these examples get wrong. Fine for a typical single-host self-hosted setup; if you need stronger isolation, look into Docker secrets (Swarm) or an external secrets manager instead.
 
 ## Quick start
 
