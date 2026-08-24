@@ -27,6 +27,51 @@ All connection details (server URL and API token) are stored in your browser's l
 
 No CORS configuration is needed on your Crawl4AI server. The dashboard includes a lightweight Node.js proxy that makes all API requests server-side, avoiding browser CORS restrictions entirely.
 
+## Configuring your Crawl4AI server's API token
+
+Crawl4AI Stats doesn't issue or manage the API token — it just stores whatever token you give it in the settings panel and sends it as `Authorization: Bearer …`. The token itself is configured on **your Crawl4AI server**, via the `CRAWL4AI_API_TOKEN` environment variable. Since 0.9.x, Crawl4AI binds to loopback only until a token is set, so you need to set this before Crawl4AI Stats (or anything else) can reach it from outside the host.
+
+Generate a token:
+
+```bash
+openssl rand -hex 32
+```
+
+Then set `CRAWL4AI_API_TOKEN` to that value on whichever platform runs Crawl4AI:
+
+**Coolify** — New Resource → Docker Image → image `unclecode/crawl4ai:latest`, port `11235` → open the **Environment Variables** tab and add `CRAWL4AI_API_TOKEN` with the generated value → Deploy.
+
+**Docker Compose**
+
+```yaml
+services:
+  crawl4ai:
+    image: unclecode/crawl4ai:latest
+    ports:
+      - "11235:11235"
+    environment:
+      - CRAWL4AI_API_TOKEN=${CRAWL4AI_API_TOKEN}
+    shm_size: 1g
+```
+
+```bash
+echo "CRAWL4AI_API_TOKEN=$(openssl rand -hex 32)" >> .env
+docker compose up -d
+```
+
+**Plain `docker run`**
+
+```bash
+docker run -d \
+  --name crawl4ai \
+  -p 11235:11235 \
+  -e CRAWL4AI_API_TOKEN=$(openssl rand -hex 32) \
+  --shm-size=1g \
+  unclecode/crawl4ai:latest
+```
+
+Once the server is running with a token, paste its URL and that token into Crawl4AI Stats' settings panel. See the [Crawl4AI self-hosting guide](https://docs.crawl4ai.com/core/self-hosting/) for the full reference.
+
 ## Quick start
 
 ```bash
