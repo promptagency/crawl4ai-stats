@@ -9,7 +9,9 @@
     "dev": "node server.js & vite",
     "build": "tsc -b && vite build",
     "start": "node server.js --production",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cf:dev": "npm run build && npx wrangler dev",
+    "cf:deploy": "npm run build && npx wrangler deploy"
   },
   "dependencies": {
     "lucide-react": "^0.575.0",

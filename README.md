@@ -117,7 +117,21 @@ FROM node:22-alpine
 WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server.js .
+COPY --from=build /app/proxy.js .
 COPY --from=build /app/package.json .
 EXPOSE 3001
 CMD ["node", "server.js", "--production"]
 ```
+
+### Cloudflare Workers
+
+`worker.js` runs the same proxy as `server.js` and serves `dist/` as static assets (config in `wrangler.jsonc`).
+
+```bash
+npx wrangler login
+npm run cf:deploy
+```
+
+`wrangler.jsonc` disables the `*.workers.dev` and preview URLs, so the Worker is only reachable on a domain you add yourself: **Workers & Pages → crawl4ai-stats → Settings → Domains & Routes** (the zone must be on Cloudflare).
+
+> **Lock it down.** `/api/proxy` will fetch any public URL for whoever calls it, and the dashboard itself has no login. Put the domain behind [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/self-hosted-public-app/) (Zero Trust → Access → Applications → Self-hosted) with a policy that allows only your own email. The same applies to the Node server — put it behind an authenticating reverse proxy.
